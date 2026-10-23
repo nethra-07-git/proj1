@@ -1,3 +1,4 @@
+
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -16,3 +17,18 @@ spec:
         - name: online-banking-container
           image: nethra0704/online-banking-system:1.0
           imagePullPolicy: Always
+          stdin: true
+          tty: true
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: online-banking-service
+spec:
+  type: NodePort
+  selector:
+    app: online-banking
+  ports:
+    - port: 80
+      targetPort: 8080
+      nodePort: 30008
