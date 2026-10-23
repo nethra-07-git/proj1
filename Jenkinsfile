@@ -30,6 +30,7 @@ pipeline {
 
     environment {
         MAVEN_HOME = 'C:\\Users\\nethr\\OneDrive\\Documents\\apache-maven-3.9.16'
+        DOCKER_EXE = 'C:\\Users\\nethr\\AppData\\Local\\Programs\\DockerDesktop\\resources\\bin\\docker.exe'
         DOCKER_IMAGE = "${params.DOCKER_USERNAME}/online-banking-system:${params.IMAGE_TAG}"
     }
 
