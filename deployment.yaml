@@ -1,0 +1,18 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: online-banking-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: online-banking
+  template:
+    metadata:
+      labels:
+        app: online-banking
+    spec:
+      containers:
+        - name: online-banking-container
+          image: nethra0704/online-banking-system:1.0
+          imagePullPolicy: Always
