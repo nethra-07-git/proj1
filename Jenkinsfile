@@ -56,7 +56,7 @@ pipeline {
 
         stage('Build Docker Image') {
             steps {
-                bat 'docker build -t %DOCKER_IMAGE% .'
+                bat '"%DOCKER_EXE%" build -t %DOCKER_IMAGE% .'
             }
         }
 
@@ -72,8 +72,9 @@ pipeline {
                     powershell '''
                         $secureToken = ConvertTo-SecureString $env:DOCKER_TOKEN -AsPlainText -Force
                         $credential = New-Object System.Management.Automation.PSCredential($env:DOCKER_USER, $secureToken)
-                        $credential.GetNetworkCredential().Password |
-                            docker login --username $env:DOCKER_USER --password-stdin
+                        $password = $credential.GetNetworkCredential().Password
+                        $password | & $env:DOCKER_EXE login --username $env:DOCKER_USER --password-stdin
+
                         if ($LASTEXITCODE -ne 0) {
                             exit 1
                         }
@@ -84,7 +85,7 @@ pipeline {
 
         stage('Push Docker Image') {
             steps {
-                bat 'docker push %DOCKER_IMAGE%'
+                bat '"%DOCKER_EXE%" push %DOCKER_IMAGE%'
             }
         }
     }
