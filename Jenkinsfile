@@ -2,22 +2,17 @@
 pipeline {
     agent any
 
-    tools {
-        jdk 'JAVA_HOME'
-        maven 'M3'
-    }
-
     parameters {
         string(
             name: 'DOCKER_USERNAME',
             defaultValue: 'nethra0704',
-            description: 'Enter your Docker Hub username'
+            description: 'Docker Hub username'
         )
 
         string(
             name: 'IMAGE_TAG',
             defaultValue: '1.0',
-            description: 'Enter the Docker image tag'
+            description: 'Docker image tag'
         )
 
         string(
@@ -29,16 +24,17 @@ pipeline {
         string(
             name: 'BRANCH_NAME',
             defaultValue: 'main',
-            description: 'Git branch to build'
+            description: 'Git branch name'
         )
     }
 
     environment {
+        MAVEN_HOME = 'C:\\Users\\nethr\\OneDrive\\Documents\\apache-maven-3.9.16'
         DOCKER_IMAGE = "${params.DOCKER_USERNAME}/online-banking-system:${params.IMAGE_TAG}"
     }
 
     stages {
-        stage('Checkout Repository') {
+        stage('Checkout') {
             steps {
                 git branch: "${params.BRANCH_NAME}",
                     url: "${params.GITHUB_REPO_URL}"
@@ -47,13 +43,13 @@ pipeline {
 
         stage('Build and Test') {
             steps {
-                bat '"C:\\Users\\nethr\\OneDrive\\Documents\\apache-maven-3.9.16\\bin\\mvn.cmd" clean test'
+                bat '"%MAVEN_HOME%\\bin\\mvn.cmd" clean test'
             }
         }
 
         stage('Package Application') {
             steps {
-                bat '"C:\\Users\\nethr\\OneDrive\\Documents\\apache-maven-3.9.16\\bin\\mvn.cmd" package'
+                bat '"%MAVEN_HOME%\\bin\\mvn.cmd" package'
             }
         }
 
@@ -65,12 +61,22 @@ pipeline {
 
         stage('Login to Docker Hub') {
             steps {
-                withCredentials([usernamePassword(
-                    credentialsId: 'dockerhub-pat',
-                    usernameVariable: 'DOCKER_USER',
-                    passwordVariable: 'DOCKER_TOKEN'
-                )]) {
-                    bat 'docker login -u "%DOCKER_USER%" --password-stdin'
+                withCredentials([
+                    usernamePassword(
+                        credentialsId: 'dockerhub-pat',
+                        usernameVariable: 'DOCKER_USER',
+                        passwordVariable: 'DOCKER_TOKEN'
+                    )
+                ]) {
+                    powershell '''
+                        $secureToken = ConvertTo-SecureString $env:DOCKER_TOKEN -AsPlainText -Force
+                        $credential = New-Object System.Management.Automation.PSCredential($env:DOCKER_USER, $secureToken)
+                        $credential.GetNetworkCredential().Password |
+                            docker login --username $env:DOCKER_USER --password-stdin
+                        if ($LASTEXITCODE -ne 0) {
+                            exit 1
+                        }
+                    '''
                 }
             }
         }
@@ -86,8 +92,9 @@ pipeline {
         success {
             echo 'Online Banking System built, tested, and pushed successfully!'
         }
+
         failure {
-            echo 'Pipeline failed. Check the console output.'
+            echo 'Pipeline failed. Check the Console Output.'
         }
     }
 }
