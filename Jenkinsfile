@@ -3,29 +3,10 @@ pipeline {
     agent any
 
     parameters {
-        string(
-            name: 'DOCKER_USERNAME',
-            defaultValue: 'nethra0704',
-            description: 'Docker Hub username'
-        )
-
-        string(
-            name: 'IMAGE_TAG',
-            defaultValue: '1.0',
-            description: 'Docker image tag'
-        )
-
-        string(
-            name: 'GITHUB_REPO_URL',
-            defaultValue: 'https://github.com/nethra-07-git/proj1.git',
-            description: 'GitHub repository URL'
-        )
-
-        string(
-            name: 'BRANCH_NAME',
-            defaultValue: 'main',
-            description: 'Git branch name'
-        )
+        string(name: 'DOCKER_USERNAME', defaultValue: 'nethra0704', description: 'Docker Hub username')
+        string(name: 'IMAGE_TAG', defaultValue: '1.0', description: 'Docker image tag')
+        string(name: 'GITHUB_REPO_URL', defaultValue: 'https://github.com/nethra-07-git/proj1.git', description: 'GitHub repository URL')
+        string(name: 'BRANCH_NAME', defaultValue: 'main', description: 'Git branch name')
     }
 
     environment {
@@ -64,7 +45,7 @@ pipeline {
             steps {
                 withCredentials([
                     usernamePassword(
-                        credentialsId: 'dockerhub-pat',
+                        credentialsId: 'dockerhub-cred',
                         usernameVariable: 'DOCKER_USER',
                         passwordVariable: 'DOCKER_TOKEN'
                     )
@@ -94,7 +75,6 @@ pipeline {
         success {
             echo 'Online Banking System built, tested, and pushed successfully!'
         }
-
         failure {
             echo 'Pipeline failed. Check the Console Output.'
         }
